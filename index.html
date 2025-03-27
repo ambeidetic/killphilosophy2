@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KillPhilosophy</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Favicon -->
+    <link rel="icon" href="img/favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Add D3.js for network visualization -->
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+</head>
+<body>
+    <!-- Skip to content link for accessibility -->
+    <a href="#main-content" class="skip-to-content">Skip to content</a>
+    
+    <!-- Header -->
+    <header>
+        <div id="main-logo" class="logo">KillPhilosophy</div>
+    </header>
+    
+    <!-- Main Navigation -->
+    <nav role="navigation" aria-label="Main Navigation">
+        <a href="#" id="nav-search" role="button" aria-pressed="true">Search</a>
+        <a href="#" id="nav-database" role="button" aria-pressed="false">Database</a>
+        <a href="#" id="nav-novelty-tiles" role="button" aria-pressed="false">Novelty</a>
+        <a href="#" id="nav-deep-search" role="button" aria-pressed="false">Deep_Search</a>
+        <a href="#" id="nav-about" role="button" aria-pressed="false">About</a>
+        <a href="#" id="nav-contribute" role="button" aria-pressed="false">Contribute</a>
+        <a href="#" id="nav-admin" class="admin-link" role="button" aria-pressed="false" style="display: none;">Admin</a>
+    </nav>
+    
+    <!-- Main Content -->
+    <main id="main-content">
+        <!-- Search Container -->
+        <section id="search-container" class="container">
+            <div class="container-header">
+                <h1>Search</h1>
+            </div>
+            <div class="container-content">
+                <form id="search-form" class="search-form">
+                    <div class="search-box-container">
+                        <span class="prompt-symbol">></span>
+                        <input type="text" class="search-box" placeholder="Enter academic name..." aria-label="Search academics">
+                        <span class="terminal-cursor">█</span>
+                    </div>
+                    <button type="submit" class="search-button">Search</button>
+                </form>
+                
+                <div class="suggestions-container" role="listbox" aria-label="Search suggestions"></div>
+                
+                <div class="search-status" style="display: none;">
+                    <div class="loader"></div>
+                    <span class="search-status-text">Searching...</span>
+                </div>
+                
+                <div class="command-history">
+                    <h2>Recent Searches</h2>
+                    <div class="command-history-list"></div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Results Container -->
+        <section id="results-container" class="container" style="display: none;">
+            <div class="container-header">
+                <h1>Academic Profile</h1>
+                <button class="back-button" onclick="navSearchHandler()">Back to Search</button>
+            </div>
+            <div class="container-content">
+                <!-- Academic profile will be inserted here dynamically -->
+            </div>
+            <div id="visualization-container" class="visualization-content" data-description="Network visualization of academic connections" style="display: none;"></div>
+        </section>
+        
+        <!-- Database Container -->
+        <section id="database-container" class="container" style="display: none;">
+            <div class="container-header">
+                <h1>Database</h1>
+            </div>
+            <div class="container-content" id="database-content">
+                <!-- Database listing will be inserted here dynamically -->
+            </div>
+        </section>
+        
+        <!-- Novelty Tiles Container -->
+        <section id="novelty-tiles-container" class="container" style="display: none;">
+            <div class="container-header">
+                <h1>Novelty Tiles</h1>
+            </div>
+            <div class="container-content" id="novelty-tiles-content">
+                <!-- Novelty tiles will be inserted here dynamically -->
+            </div>
+        </section>
+        
+        <!-- Deep Search Container -->
+        <section id="deep-search-container" class="container" style="display: none;">
+            <div class="container-header">
+                <h1>Deep Search</h1>
+            </div>
+            <div class="container-content">
+                <div class="deep-search-form">
+                    <div class="form-group">
+                        <label for="deep-search-input">Enter your search query:</label>
+                        <textarea id="deep-search-input" class="deep-search-input" rows="4" placeholder="Enter a deep search query..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="search-depth">Search Depth:</label>
+                        <select id="search-depth">
+                            <option value="basic">Basic</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="deep">Deep</option>
+                        </select>
+                    </div>
+                    
+                    <div class="api-key-info">
+                        <a href="#" id="api-key-link">Configure API Key</a>
+                        <div id="api-key-config" class="api-key-config">
+                            <label for="api-key-input">Enter API Key:</label>
+                            <input type="password" id="api-key-input" placeholder="API Key">
+                            <button id="save-api-key">Save Key</button>
+                        </div>
+                    </div>
+                    
+                    <button id="run-deep-search" class="run-deep-search-btn">Run Deep Search</button>
+                </div>
+                
+                <div class="search-status-container" style="display: none;">
+                    <div class="search-status-text">Searching...</div>
+                    <div class="deep-search-progress-bar"></div>
+                </div>
+                
+                <div id="deep-search-results" class="deep-search-results">
+                    <!-- Deep search results will be inserted here dynamically -->
+                </div>
+            </div>
+        </section>
+        
+        <!-- About Container -->
+        <section id="about-container" class="container" style="display: none;">
+            <div class="container-header">
+                <h1>About</h1>
+            </div>
+            <div class="container-content">
+                <div class="about-content">
+                    <h2>KillPhilosophy</h2>
+                    <p>An interactive web application for exploring the interconnections between philosophers, critical theorists, and other academics in the humanities.</p>
+                    
+                    <h3>Overview</h3>
+                    <p>KillPhilosophy is a tool designed to map and visualize the relationships between various academic figures, their works, and their intellectual traditions. The application allows users to:</p>
+                    <ul>
+                        <li>Search for specific academics and explore their profiles</li>
+                        <li>Discover connections between different academics</li>
+                        <li>Browse papers, events, and intellectual traditions</li>
+                        <li>Get notifications about new content through the Novelty Tiles feature</li>
+                        <li>Perform deep searches to find relationships that aren't immediately obvious</li>
+                    </ul>
+                    
+                    <h3>Features</h3>
+                    <h4>Academic Profiles</h4>
+                    <p>Detailed profiles for each academic, including:</p>
+                    <ul>
+                        <li>Biographical information</li>
+                        <li>Taxonomical classifications (discipline, tradition, era, methodology, themes)</li>
+                        <li>Papers and publications</li>
+                        <li>Key events</li>
+                        <li>Intellectual connections to other academics</li>
+                    </ul>
+                    
+                    <h4>Deep Search</h4>
+                    <p>The Deep Search functionality allows users to:</p>
+                    <ul>
+                        <li>Find academics not yet in the database</li>
+                        <li>Discover connections between seemingly unrelated academics</li>
+                        <li>Explore intellectual lineages and influences</li>
+                    </ul>
+                    
+                    <h4>Novelty Tiles</h4>
+                    <p>The Novelty Tiles feature surfaces new content and connections, including:</p>
+                    <ul>
+                        <li>Recently discovered lectures, papers, or interviews</li>
+                        <li>New connections between academics</li>
+                        <li>Recently added content</li>
+                    </ul>
+                    
+                    <h4>Database Browser</h4>
+                    <p>Browse all academics in the database alphabetically, making it easy to discover new figures and explore their work.</p>
+                    
+                    <h3>Technical Details</h3>
+                    <p>KillPhilosophy is built using standard web technologies:</p>
+                    <ul>
+                        <li>HTML5</li>
+                        <li>CSS3</li>
+                        <li>Vanilla JavaScript (no frameworks)</li>
+                        <li>LocalStorage for data persistence</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Contribute Container -->
+        <section id="contribute-container" class="container" style="display: none;">
+            <div class="container-header">
+                <h1>Contribute</h1>
+            </div>
+            <div class="container-content">
+                <div class="contribute-content">
+                    <h2>Contribute to KillPhilosophy</h2>
+                    <p>Help expand our database by contributing information about academics, their work, and connections.</p>
+                    
+                    <div class="contribution-form">
+                        <div class="form-group">
+                            <label for="academic-name">Academic Name:</label>
+                            <input type="text" id="academic-name" placeholder="Enter academic name">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="contribution-type">Contribution Type:</label>
+                            <select id="contribution-type">
+                                <option value="paper">Paper/Publication</option>
+                                <option value="event">Event/Appearance</option>
+                                <option value="connection">Connection</option>
+                                <option value="taxonomy">Taxonomy</option>
+                                <option value="bio">Biography</option>
+                            </select>
+                        </div>
+                        
+                        <div id="contribution-details" class="contribution-details">
+                            <!-- Contribution form fields will be dynamically inserted based on type -->
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="contributor-name">Your Name (optional):</label>
+                            <input type="text" id="contributor-name" placeholder="Enter your name">
+                        </div>
+                        
+                        <div class="form-group">
+                            <input type="checkbox" id="github-submit">
+                            <label for="github-submit">Submit to GitHub repository</label>
+                        </div>
+                        
+                        <button id="submit-contribution" class="submit-btn">Submit Contribution</button>
+                    </div>
+                    
+                    <div id="contribution-result" class="contribution-result"></div>
+                    
+                    <h3>GitHub Integration</h3>
+                    <div class="github-link">
+                        <p>Connect to GitHub to contribute directly to the project repository.</p>
+                        <div class="form-group">
+                            <label for="github-repo">Repository:</label>
+                            <input type="text" id="github-repo" placeholder="username/repository">
+                        </div>
+                        <div class="form-group">
+                            <label for="github-token">Access Token (optional):</label>
+                            <input type="password" id="github-token" placeholder="GitHub access token">
+                        </div>
+                        <button id="connect-github" class="action-btn">Connect to GitHub</button>
+                    </div>
+                    
+                    <div id="github-status-panel" class="github-status-panel" style="display: none;">
+                        <h4>GitHub Status</h4>
+                        <div id="github-log-content" class="github-log-content"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Admin Container -->
+        <section id="admin-container" class="container" style="display: none;">
+            <div class="container-header">
+                <h1>Admin</h1>
+            </div>
+            <div class="container-content">
+                <div class="admin-content">
+                    <h2>Database Management</h2>
+                    
+                    <div class="admin-actions">
+                        <button id="export-database" class="admin-btn">Export Database</button>
+                        <button id="import-database" class="admin-btn">Import Database</button>
+                        <button id="clear-database" class="admin-btn">Clear Database</button>
+                    </div>
+                    
+                    <h3>Pending Submissions</h3>
+                    <div id="pending-submissions" class="pending-submissions">
+                        <!-- Pending submissions will be inserted here dynamically -->
+                    </div>
+                    
+                    <h3>GitHub Pull Requests</h3>
+                    <button id="fetch-pull-requests" class="admin-btn">Fetch Pull Requests</button>
+                    <div id="pull-requests" class="pull-requests">
+                        <!-- Pull requests will be inserted here dynamically -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 KillPhilosophy - An open-source project for mapping academic interconnections</p>
+        <div class="footer-links">
+            <a href="https://github.com/username/killphilosophy" target="_blank">GitHub</a>
+            <a href="#" onclick="navAboutHandler(); return false;">About</a>
+            <a href="#" onclick="navContributeHandler(); return false;">Contribute</a>
+        </div>
+    </footer>
+    
+    <!-- Ensure scripts are loaded in the correct order -->
+    <script src="js/database.js"></script>
+    <script src="js/github-api.js"></script>
+    <script src="js/deepsearch-api.js"></script>
+    <script src="js/network-visualization.js"></script>
+    <script src="js/contribution-handler.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
